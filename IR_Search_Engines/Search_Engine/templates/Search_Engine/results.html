@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        h1 {
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #007bff;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        p {
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+            border: none;
+            background: none;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-decoration: none;
+            color: #333;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .pagination .current {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Results</h1>
+
+    {% if query %}
+        <h2>Query: {{ query }}</h2>
+        <p>Found {{ count }} results.</p>
+    {% else %}
+        <p>No query submitted.</p>
+    {% endif %}
+
+    {% if results %}
+        <ul>
+            {% for result in results %}
+                <li>
+                    <h3>{{ result.title }}</h3>
+                    <p>{{ result.content }}</p>
+                    <p>Relevance Score: {{ result.score }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+
+        {% if results.has_other_pages %}
+            <ul class="pagination">
+                {% if results.has_previous %}
+                    <li><a href="?page=1&search_query={{ query }}">&laquo; First</a></li>
+                    <li><a href="?page={{ results.previous_page_number }}&search_query={{ query }}">Previous</a></li>
+                {% endif %}
+
+                <li>
+                    <span>
+                        Page {{ results.number }} of {{ results.paginator.num_pages }}.
+                    </span>
+                </li>
+
+                {% if results.has_next %}
+                    <li><a href="?page={{ results.next_page_number }}&search_query={{ query }}">Next</a></li>
+                    <li><a href="?page={{ results.paginator.num_pages }}&search_query={{ query }}">Last &raquo;</a></li>
+                {% endif %}
+            </ul>
+        {% endif %}
+    {% else %}
+        {% if query %}
+            <p class="error">No results found for your query.</p>
+        {% else %}
+            <p>Please enter a search query.</p>
+        {% endif %}
+    {% endif %}
+
+    <a href="{% url 'search' %}">Back to Search</a>
+</body>
+</html>

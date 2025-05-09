@@ -1,0 +1,15 @@
+Report on ARM Architecture
+1. Register Organization
+The ARM architecture is designed with a highly efficient register organization that adapts
+to different processor modes, such as User, FIQ (Fast Interrupt Request), IRQ (Interrupt
+Request), Supervisor, and others. Below are the key aspects of its register structure:
+1.1 Number of Registers
+ARM processors typically include 37 registers in total:
+•
+•
+31 general-purpose registers (R0-R30): These are used for arithmetic, logical
+operations, and data storage.
+6 status registers: Include the CPSR (Current Program Status Register) and
+SPSRs (Saved Program Status Registers) for exception handling.
+However, only 16 registers (R0-R15) are visible at any given time in most operating
+modes. The visibility depends on the mode the processor is currently executing in.
