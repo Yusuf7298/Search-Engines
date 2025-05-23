@@ -5,6 +5,10 @@ from Search_Engine.models import Document, DocumentChunk
 import PyPDF2
 import sqlite3
 
+from docx import Document as DocxDocument
+from pptx import Presentation
+import pandas as pd
+
 
 class Command(BaseCommand):
     help = 'Loads documents from a directory into the database'
@@ -82,3 +86,49 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"Database error creating document/chunks for {filename}: {db_err}"))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"General error creating document/chunks for {filename}: {e}"))
+            content = ""
+
+            try:
+                if filename.endswith(".txt"):
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        content = f.read()
+
+                elif filename.endswith(".pdf"):
+                    with open(filepath, 'rb') as f:
+                        reader = PyPDF2.PdfReader(f)
+                        content = ''.join([page.extract_text() or "" for page in reader.pages])
+
+                elif filename.endswith(".docx"):
+                    doc = DocxDocument(filepath)
+                    content = '\n'.join([para.text for para in doc.paragraphs])
+
+                elif filename.endswith(".pptx"):
+                    prs = Presentation(filepath)
+                    slides = []
+                    for slide in prs.slides:
+                        for shape in slide.shapes:
+                            if hasattr(shape, "text"):
+                                slides.append(shape.text)
+                    content = '\n'.join(slides)
+
+                elif filename.endswith(".csv") or filename.endswith(".xlsx"):
+                    df = pd.read_csv(filepath) if filename.endswith(".csv") else pd.read_excel(filepath)
+                    content = df.to_string(index=False)
+
+                else:
+                    self.stdout.write(self.style.WARNING(f"Skipping {filename}: Unsupported file type"))
+                    continue
+
+                # Save to database
+                title = filename.rsplit('.', 1)[0]
+                document = Document.objects.create(title=title, content=content)
+
+                chunk_size = 1000
+                for i in range(0, len(content), chunk_size):
+                    chunk = content[i:i + chunk_size]
+                    DocumentChunk.objects.create(document=document, content=chunk)
+
+                self.stdout.write(self.style.SUCCESS(f"Successfully loaded: {filename}"))
+
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"Failed to load {filename}: {e}"))
