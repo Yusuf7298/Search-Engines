@@ -148,3 +148,130 @@
     <a href="{% url 'search' %}">Back to Search</a>
 </body>
 </html>
+{% load dict_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Search Results for "{{ query }}"</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            margin-top: 40px;
+        }
+
+        p {
+            font-size: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 40px;
+            background-color: #fff;
+            box-shadow: 0 0 6px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #ecf0f1;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .pagination a {
+            margin: 0 8px;
+            padding: 6px 12px;
+            text-decoration: none;
+            background-color: #3498db;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .pagination span {
+            margin: 0 10px;
+            font-weight: bold;
+        }
+
+        .pagination a:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Results for "{{ query }}"</h1>
+    
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    
+    <p><strong>Total documents found:</strong> {{ count }}</p>
+    <p><strong>Total unique index terms:</strong> {{ index_terms_count }}</p>
+
+    <h2>Document Lengths (Number of Terms)</h2>
+    <table>
+        <thead>
+            <tr><th>Document ID</th><th>Length</th></tr>
+        </thead>
+        <tbody>
+            {% for doc_id, length in document_lengths.items %}
+            <tr><td>{{ doc_id }}</td><td>{{ length }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Ranked Search Results</h2>
+    <table>
+        <thead>
+            <tr><th>Rank</th><th>Title</th><th>Content Preview</th><th>Score</th></tr>
+        </thead>
+        <tbody>
+            {% for result in page_obj %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ result.title }}</td>
+                <td>{{ result.content }}</td>
+                <td>{{ result.score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+</body>
+</html>
